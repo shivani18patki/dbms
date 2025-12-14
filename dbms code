@@ -1,0 +1,390 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
+USE `mydb` ;
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Customers`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`Customers` (
+  `Customer_id` INT NOT NULL,
+  `First_name` VARCHAR(45) NOT NULL,
+  `last_name` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(45) NOT NULL,
+  `phone` INT NOT NULL,
+  `default_address_id` VARCHAR(45) NOT NULL,
+  `created_at` VARCHAR(45) NOT NULL,
+  `updated_at` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`Customer_id`),
+  UNIQUE INDEX `phone_UNIQUE` (`phone` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`orders`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`orders` (
+  `order_id` INT NOT NULL,
+  `product_id` INT NOT NULL,
+  `unit_price` VARCHAR(45) NOT NULL,
+  `quantity` INT NOT NULL,
+  `discount_amount` VARCHAR(45) NOT NULL,
+  `line_total` VARCHAR(45) NULL,
+  `Customers_Customer_id` INT NOT NULL,
+  PRIMARY KEY (`order_id`),
+  INDEX `fk_orders_Customers1_idx` (`Customers_Customer_id` ASC) VISIBLE,
+  CONSTRAINT `fk_orders_Customers1`
+    FOREIGN KEY (`Customers_Customer_id`)
+    REFERENCES `mydb`.`Customers` (`Customer_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`subscription`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`subscription` (
+  `subscription_id` INT NOT NULL,
+  `customer_id` INT NOT NULL,
+  `start_date` DATETIME NOT NULL,
+  `next_billing_date` DATE NOT NULL,
+  `created_at` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`subscription_id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`payments`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`payments` (
+  `payment_id` INT NOT NULL,
+  `customer_id` INT NOT NULL,
+  `order_id` INT NOT NULL,
+  `subscription_id` INT NOT NULL,
+  `rental_id` INT NOT NULL,
+  `payment_method` VARCHAR(45) NOT NULL,
+  `amount` VARCHAR(45) NOT NULL,
+  `paid_at` DATETIME NOT NULL,
+  `Customers_Customer_id` INT NOT NULL,
+  `orders_order_id` INT NOT NULL,
+  `subscription_subscription_id` INT NOT NULL,
+  PRIMARY KEY (`payment_id`),
+  UNIQUE INDEX `customer_id_UNIQUE` (`customer_id` ASC) VISIBLE,
+  INDEX `fk_payments_Customers1_idx` (`Customers_Customer_id` ASC) VISIBLE,
+  INDEX `fk_payments_orders1_idx` (`orders_order_id` ASC) VISIBLE,
+  INDEX `fk_payments_subscription1_idx` (`subscription_subscription_id` ASC) VISIBLE,
+  CONSTRAINT `fk_payments_Customers1`
+    FOREIGN KEY (`Customers_Customer_id`)
+    REFERENCES `mydb`.`Customers` (`Customer_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_payments_orders1`
+    FOREIGN KEY (`orders_order_id`)
+    REFERENCES `mydb`.`orders` (`order_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_payments_subscription1`
+    FOREIGN KEY (`subscription_subscription_id`)
+    REFERENCES `mydb`.`subscription` (`subscription_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`addresses`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`addresses` (
+  `address_id` INT NOT NULL,
+  `customer_id` INT NOT NULL,
+  `city` VARCHAR(100) NOT NULL,
+  `state` VARCHAR(100) NOT NULL,
+  `postal_code` INT NOT NULL,
+  `country` VARCHAR(20) NULL,
+  `is_billing` VARCHAR(45) NOT NULL,
+  `is_shipping` VARCHAR(45) NOT NULL,
+  `created_at` VARCHAR(45) NOT NULL,
+  `Customers_Customer_id` INT NOT NULL,
+  INDEX `fk_addresses_Customers_idx` (`Customers_Customer_id` ASC) VISIBLE,
+  CONSTRAINT `fk_addresses_Customers`
+    FOREIGN KEY (`Customers_Customer_id`)
+    REFERENCES `mydb`.`Customers` (`Customer_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`categories`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`categories` (
+  `category_id` INT NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `description` VARCHAR(45) NOT NULL,
+  `text` VARCHAR(45) NOT NULL,
+  `parent_category_id` VARCHAR(45) NULL)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`subscription_palns`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`subscription_palns` (
+  `plan_id` INT NOT NULL,
+  `code` VARCHAR(45) NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `billing_period` VARCHAR(45) NOT NULL,
+  `price` DECIMAL(12,2) NOT NULL,
+  `trial_days` INT NULL,
+  `active` INT NOT NULL,
+  `created_at` VARCHAR(45) NOT NULL DEFAULT 'current_timestamp',
+  `subscription_subscription_id` INT NOT NULL,
+  PRIMARY KEY (`plan_id`),
+  UNIQUE INDEX `code_UNIQUE` (`code` ASC) VISIBLE,
+  INDEX `fk_subscription_palns_subscription1_idx` (`subscription_subscription_id` ASC) VISIBLE,
+  CONSTRAINT `fk_subscription_palns_subscription1`
+    FOREIGN KEY (`subscription_subscription_id`)
+    REFERENCES `mydb`.`subscription` (`subscription_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`suppliers`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`suppliers` (
+  `supplier_id` INT NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `contact_email` VARCHAR(45) NOT NULL,
+  `phone` INT NOT NULL,
+  `address_id` VARCHAR(45) NOT NULL,
+  `` VARCHAR(45) NULL,
+  `subscription_palns_plan_id` INT NOT NULL,
+  INDEX `fk_suppliers_subscription_palns1_idx` (`subscription_palns_plan_id` ASC) VISIBLE,
+  CONSTRAINT `fk_suppliers_subscription_palns1`
+    FOREIGN KEY (`subscription_palns_plan_id`)
+    REFERENCES `mydb`.`subscription_palns` (`plan_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`products`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`products` (
+  `product_id` INT NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `description` VARCHAR(45) NOT NULL,
+  `category_id` INT NOT NULL,
+  `supplier_id` INT NOT NULL,
+  `price` VARCHAR(45) NOT NULL,
+  `is_rentable` VARCHAR(45) NOT NULL,
+  `created_at` VARCHAR(45) NOT NULL,
+  `updated_at` VARCHAR(45) NOT NULL,
+  `orders_order_id` INT NOT NULL,
+  PRIMARY KEY (`orders_order_id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`inventory`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`inventory` (
+  `inventory_id` INT NOT NULL,
+  `product_id` INT NOT NULL,
+  `warehouse` VARCHAR(45) NOT NULL,
+  `quantity_on_hand` VARCHAR(45) NOT NULL,
+  `reorder_level` INT NOT NULL,
+  `last_restocked` VARCHAR(45) NOT NULL,
+  `products_orders_order_id` INT NOT NULL,
+  `products_orders_order_id1` INT NOT NULL,
+  INDEX `fk_inventory_products1_idx` (`products_orders_order_id` ASC) VISIBLE,
+  INDEX `fk_inventory_products2_idx` (`products_orders_order_id1` ASC) VISIBLE,
+  CONSTRAINT `fk_inventory_products1`
+    FOREIGN KEY (`products_orders_order_id`)
+    REFERENCES `mydb`.`products` (`orders_order_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_inventory_products2`
+    FOREIGN KEY (`products_orders_order_id1`)
+    REFERENCES `mydb`.`products` (`orders_order_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`rental_units`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`rental_units` (
+  `rental_id` INT NOT NULL,
+  `product_id` INT NOT NULL,
+  `unit_identifiers` VARCHAR(45) NOT NULL,
+  `condition_status` VARCHAR(45) NOT NULL,
+  `last_inspected_at` VARCHAR(45) NULL,
+  `products_orders_order_id` INT NOT NULL,
+  INDEX `fk_rental_units_products1_idx` (`products_orders_order_id` ASC) VISIBLE,
+  CONSTRAINT `fk_rental_units_products1`
+    FOREIGN KEY (`products_orders_order_id`)
+    REFERENCES `mydb`.`products` (`orders_order_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`bundles`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`bundles` (
+  `bundle_id` INT NULL,
+  `code` VARCHAR(45) NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `description` TEXT(200) NOT NULL,
+  `price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `crreated_at` VARCHAR(45) NOT NULL,
+  `products_orders_order_id` INT NOT NULL,
+  `subscription_palns_plan_id` INT NOT NULL,
+  PRIMARY KEY (`bundle_id`),
+  INDEX `fk_bundles_products1_idx` (`products_orders_order_id` ASC) VISIBLE,
+  INDEX `fk_bundles_subscription_palns1_idx` (`subscription_palns_plan_id` ASC) VISIBLE,
+  CONSTRAINT `fk_bundles_products1`
+    FOREIGN KEY (`products_orders_order_id`)
+    REFERENCES `mydb`.`products` (`orders_order_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_bundles_subscription_palns1`
+    FOREIGN KEY (`subscription_palns_plan_id`)
+    REFERENCES `mydb`.`subscription_palns` (`plan_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`order_items`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`order_items` (
+  `order_item_id` INT NOT NULL,
+  `odedr_id` INT NOT NULL,
+  `product_id` INT NOT NULL,
+  `unit_price` DECIMAL(12,2) NOT NULL,
+  `quantity` INT NOT NULL,
+  `discount_amount` DECIMAL(12,2) NOT NULL,
+  `line_total` DECIMAL(12,2) NOT NULL)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`rentals`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`rentals` (
+  `rental_id` INT NOT NULL,
+  `customer_id` INT NOT NULL,
+  `rental_start` DATETIME NOT NULL,
+  `rental_end` DATETIME NOT NULL,
+  `total_rental_amount` DATETIME NOT NULL,
+  `deposit_amount` DECIMAL(12,2) NOT NULL,
+  `created_at` VARCHAR(45) NOT NULL,
+  `Customers_Customer_id` INT NOT NULL,
+  `subscription_subscription_id` INT NOT NULL,
+  INDEX `fk_rentals_Customers1_idx` (`Customers_Customer_id` ASC) VISIBLE,
+  INDEX `fk_rentals_subscription1_idx` (`subscription_subscription_id` ASC) VISIBLE,
+  CONSTRAINT `fk_rentals_Customers1`
+    FOREIGN KEY (`Customers_Customer_id`)
+    REFERENCES `mydb`.`Customers` (`Customer_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_rentals_subscription1`
+    FOREIGN KEY (`subscription_subscription_id`)
+    REFERENCES `mydb`.`subscription` (`subscription_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`returns`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`returns` (
+  `return_id` INT NOT NULL,
+  `order_id` INT NOT NULL,
+  `rental_id` INT NOT NULL,
+  `customer_id` INT NOT NULL,
+  `reason` TEXT(300) NOT NULL,
+  `created_at` VARCHAR(45) NOT NULL,
+  `orders_order_id` INT NOT NULL,
+  INDEX `fk_returns_orders1_idx` (`orders_order_id` ASC) VISIBLE,
+  CONSTRAINT `fk_returns_orders1`
+    FOREIGN KEY (`orders_order_id`)
+    REFERENCES `mydb`.`orders` (`order_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`refunds`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`refunds` (
+  `refund_id` INT NOT NULL,
+  `payment_id` INT NOT NULL,
+  `amount` DECIMAL(12,2) NOT NULL,
+  `refunded_at` VARCHAR(45) NOT NULL,
+  `reason` TEXT(300) NOT NULL,
+  `payments_payment_id` INT NOT NULL,
+  INDEX `fk_refunds_payments1_idx` (`payments_payment_id` ASC) VISIBLE,
+  CONSTRAINT `fk_refunds_payments1`
+    FOREIGN KEY (`payments_payment_id`)
+    REFERENCES `mydb`.`payments` (`payment_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`bundles_has_products`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`bundles_has_products` (
+)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`orders_has_orders`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`orders_has_orders` (
+  `orders_order_id` INT NOT NULL,
+  `orders_order_id1` INT NOT NULL,
+  PRIMARY KEY (`orders_order_id`, `orders_order_id1`),
+  INDEX `fk_orders_has_orders_orders2_idx` (`orders_order_id1` ASC) VISIBLE,
+  INDEX `fk_orders_has_orders_orders1_idx` (`orders_order_id` ASC) VISIBLE,
+  CONSTRAINT `fk_orders_has_orders_orders1`
+    FOREIGN KEY (`orders_order_id`)
+    REFERENCES `mydb`.`orders` (`order_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_orders_has_orders_orders2`
+    FOREIGN KEY (`orders_order_id1`)
+    REFERENCES `mydb`.`orders` (`order_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
